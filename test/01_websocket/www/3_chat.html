@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="http://localhost:3000/socket.io/socket.io.js" charset="utf-8"></script>
+    <style media="screen">
+    * {margin:0;padding:0;list-style:none;}
+    #ul1 li {padding:4px; border-bottom:1px dashed #333}
+    #ul1 {margin:10px auto 0}
+
+    li.my_self {color:green}
+    </style>
+    <script>
+    let sock=io.connect('ws://localhost:3000');
+
+    window.onload=function (){
+      let oTxt1=document.getElementById('txt1');
+      let oTxt2=document.getElementById('txt2');
+      let oBtn=document.getElementById('btn1');
+      let oUl=document.getElementById('ul1');
+
+      oBtn.onclick=function (){
+        sock.emit('qq', {name: oTxt1.value, content: oTxt2.value});
+
+        let oLi=document.createElement('li');
+
+        let oDate=new Date();
+        oLi.innerHTML=`
+          <h4>${oTxt1.value} <span>${
+            `${oDate.getHours()}:${oDate.getMinutes()}:${oDate.getSeconds()}`
+          }</span></h4>
+          <p>${oTxt2.value}</p>
+        `;
+        oLi.className='my_self';
+
+        oTxt2.value='';
+
+        oUl.appendChild(oLi);
+      };
+
+      sock.on('weixin', function (json){
+        let oLi=document.createElement('li');
+
+        let oDate=new Date();
+        oDate.setTime(json.time*1000);
+
+        oLi.innerHTML=`
+          <h4>${json.name} <span>${
+            `${oDate.getHours()}:${oDate.getMinutes()}:${oDate.getSeconds()}`
+          }</span></h4>
+          <p>${json.content}</p>
+        `;
+
+        oUl.appendChild(oLi);
+      });
+    };
+    </script>
+  </head>
+  <body>
+    名字：<input type="text" id="txt1"><br/>
+    内容：<input type="text" id="txt2"><br/>
+    <input type="button" value="发送" id="btn1">
+    <ul id="ul1">
+      <!--<li>
+        <h4>名字 <span>12:35:29</span></h4>
+        <p>内容内容内容内容内容内容</p>
+      </li>-->
+    </ul>
+  </body>
+</html>
